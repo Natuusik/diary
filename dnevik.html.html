@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Таблица достижений Даяны</title>
+
+<style>
+    body {
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        background: #e5e5e5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .a4-landscape {
+        width: 297mm;
+        min-height: 210mm;
+        background: white;
+        padding: 15mm;
+        box-shadow: 0 0 20px rgba(0,0,0,0.15);
+        box-sizing: border-box;
+        border-radius: 6px;
+    }
+
+    h1 {
+        text-align: center;
+        margin: 0 0 12px;
+        font-size: 22px;
+    }
+
+    .meta {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        font-size: 14px;
+        gap: 10px;
+    }
+
+    .meta input {
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        font-size: 13px;
+    }
+
+    thead th {
+        background: #eef3ff;
+        border: 1px solid #d0d7ff;
+        padding: 6px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    tbody td {
+        border: 1px solid #e0e0e0;
+        padding: 5px 6px;
+        text-align: center;
+    }
+
+    tbody td.task {
+        max-width: 300px;
+        text-align: left;
+        background: #fafafa;
+        font-weight: 500;
+        padding: 6px 8px;
+         font-size: 20px; /* ← увеличенный шрифт */
+    }
+
+    tbody td.task img {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+        margin-right: 6px;
+    }
+
+    .cell {
+        width: 20px;
+        height: 20px;
+        margin: auto;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        user-select: none;
+    }
+
+    .state-0 { background: transparent; }
+    .state-1 { background: #4CAF50; color: white; }
+    .state-2 { background: #d9534f; color: white; }
+
+    .remove-btn {
+        color: red;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    .btns {
+        margin-top: 12px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    button {
+        padding: 8px 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        background: #2f3fb0;
+        color: #fff;
+    }
+
+    button.secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    @media print {
+        button, .btns { display: none !important; }
+        body, .a4-landscape { background: white; box-shadow: none; padding: 0; margin: 0; }
+    }
+    .stats-wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.stats-box {
+    flex: 1;
+    border: 2px solid #d0d7ff;
+    background: #f7f9ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.stats-box strong {
+    font-size: 15px;
+    display: block;
+    margin-bottom: 6px;
+}
+.stats-wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.stats-box {
+    flex: 1;
+    border: 2px solid #d0d7ff;
+    background: #f7f9ff;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.stats-box strong {
+    font-size: 15px;
+    display: block;
+    margin-bottom: 6px;
+}
+@media print {
+
+    @page {
+        size: A4 landscape;
+        margin: 6mm;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        background: white;
+    }
+
+    .a4-landscape {
+        padding: 5mm;
+        width: 100%;
+        min-height: auto;
+        box-shadow: none;
+    }
+
+    table {
+        font-size: 11px;
+    }
+
+    thead th {
+        padding: 3px;
+    }
+
+    tbody td {
+        padding: 3px 4px;
+    }
+
+    tbody td.task {
+        font-size: 16px;
+        max-width: 160px;
+        white-space: normal;
+        word-break: break-word;
+    }
+
+    tbody td.task img {
+        width: 14px;
+        height: 14px;
+        margin-right: 4px;
+    }
+
+    .stats-wrapper {
+        margin-top: 10px;
+        gap: 10px;
+    }
+
+    .stats-box {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .stats-box strong {
+        font-size: 13px;
+    }
+
+    /* Итоги недели */
+    .week-summary {
+        font-size: 12px;
+        margin-top: 10px;
+        line-height: 1.3;
+    }
+
+    .btns {
+        display: none !important;
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="a4-landscape">
+
+    <h1>Таблица достижений Даяны на неделю</h1>
+
+    <div class="meta">
+        <div>Имя: <input id="childName" value="Даяна"></div>
+        <div>Неделя: <input id="weekRange" value="01.05.26 — 31.05.26"></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Задание</th>
+                <th>Пн</th>
+                <th>Вт</th>
+                <th>Ср</th>
+                <th>Чт</th>
+                <th>Пт</th>
+                <th>Сб</th>
+                <th>Вс</th>
+                <th>✖</th>
+            </tr>
+        </thead>
+        <tbody id="tasksBody"></tbody>
+    </table>
+
+    <!-- ДВА БЛОКА СТАТИСТИКИ -->
+   <div class="stats-wrapper">
+
+    <div class="stats-box">
+        <strong>Выполнения</strong>
+        Всего выполненных заданий: <span id="totalDone">0</span><br>
+        Всего замечаний: <span id="totalNotes">0</span>
+    </div>
+
+    <div class="stats-box">
+        <strong>Итоги по дням</strong>
+        Дней без замечаний: <span id="daysPerfect">0</span><br>
+        Дней с замечаниями: <span id="daysWithNotes">0</span>
+    </div>
+
+    <div class="stats-box">
+        <strong>Итоги недели</strong><br>
+        ⭐️ 1 день без замечаний — 1 наклейка<br>
+        ⭐️ 5 наклеек — маленькая радость<br>
+        (вкусняшка, фильм вместе, выбор ужина)<br>
+        ⏳ 25–30 наклеек — награда недели<br>
+        (поход, покупка мелочи, экранное время)
+    </div>
+
+</div>
+
+
+    <!-- КНОПКИ -->
+    <div class="btns">
+        <button onclick="addTask()">Добавить задание</button>
+        <button class="secondary" id="resetBtn">Сбросить</button>
+        <button id="saveBtn">Сохранить</button>
+        <button class="secondary" id="loadBtn">Загрузить</button>
+        <button id="printBtn">Печать</button>
+    </div>
+
+</div>
+
+<script>
+
+let tasks = [
+    "Заправила постель утром",
+    "Собрала портфель вечером",
+    "Вышла в школу вовремя",
+    "После школы переоделась",
+    "Вернулась домой до 19:00",
+    "Приняла душ вечером",
+    "Экранное время до 4 часов",
+    "Сдала телефон в 21:20",
+    "Легла спать вовремя 21:50",
+    "Суббота - уборка комнаты",
+    "Суббота - смена постели",
+    "Суббота - мытьё головы и тела мачалкой"
+];
+
+let icons = [
+    "icons/bed.png",
+    "icons/bag.png",
+    "icons/door.png",
+    "icons/clothes.png",
+    "icons/home.png",
+    "icons/shower.png",
+    "icons/screen.png",
+    "icons/phone.png",
+    "icons/sleep.png",
+    "icons/cleaning.png",
+    "icons/bed-change.png",
+    "icons/wash yourself.png"
+];
+
+const days = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+const tasksBody = document.getElementById("tasksBody");
+
+
+// ------------------------------------------------------
+// СОЗДАНИЕ ТАБЛИЦЫ
+// ------------------------------------------------------
+function createTable() {
+    tasksBody.innerHTML = "";
+
+    tasks.forEach((task, t) => {
+        const tr = document.createElement("tr");
+
+        // Задание + картинка
+        const tdTask = document.createElement("td");
+        tdTask.classList.add("task");
+        tdTask.innerHTML = `<img src="${icons[t]}"> ${task}`;
+        tr.appendChild(tdTask);
+
+        // Ячейки дней
+        days.forEach((d, i) => {
+            const td = document.createElement("td");
+            const cell = document.createElement("div");
+
+            cell.classList.add("cell", "state-0");
+            cell.dataset.task = t;
+            cell.dataset.day = i;
+            cell.dataset.state = "0";
+
+            cell.onclick = () => {
+                let s = Number(cell.dataset.state);
+                s = (s + 1) % 3;
+
+                cell.dataset.state = s;
+                cell.className = "cell state-" + s;
+                cell.textContent = s === 1 ? "✓" : s === 2 ? "✗" : "";
+
+                updateStats();
+            };
+
+            td.appendChild(cell);
+            tr.appendChild(td);
+        });
+
+        // Удаление задания
+        const tdRemove = document.createElement("td");
+        tdRemove.classList.add("remove-btn");
+        tdRemove.textContent = "✖";
+        tdRemove.onclick = () => {
+            tasks.splice(t, 1);
+            icons.splice(t, 1);
+            createTable();
+            updateStats();
+        };
+        tr.appendChild(tdRemove);
+
+        tasksBody.appendChild(tr);
+    });
+
+    updateStats();
+}
+
+
+// ------------------------------------------------------
+// ДОБАВЛЕНИЕ ЗАДАНИЯ
+// ------------------------------------------------------
+function addTask() {
+    const name = prompt("Введите новое задание:");
+    if (!name) return;
+
+    // Выбор картинки
+    const icon = prompt(
+        "Введите имя файла картинки (например: bed.png)\n" +
+        "или оставьте пустым — будет стандартная."
+    );
+
+    tasks.push(name);
+    icons.push(icon ? "icons/" + icon : "icons/default.png");
+
+    createTable();
+}
+
+
+// ------------------------------------------------------
+// СБРОС ВСЕХ ЯЧЕЕК
+// ------------------------------------------------------
+function resetAll() {
+    document.querySelectorAll(".cell").forEach(c => {
+        c.dataset.state = "0";
+        c.className = "cell state-0";
+        c.textContent = "";
+    });
+
+    updateStats();
+}
+
+
+// ------------------------------------------------------
+// СОХРАНЕНИЕ
+// ------------------------------------------------------
+function saveState() {
+    const data = {
+        name: childName.value,
+        week: weekRange.value,
+        tasks,
+        icons,
+        cells: Array.from(document.querySelectorAll(".cell")).map(c => ({
+            task: c.dataset.task,
+            day: c.dataset.day,
+            state: c.dataset.state
+        }))
+    };
+
+    localStorage.setItem("dayanaTable", JSON.stringify(data));
+    alert("Сохранено");
+}
+
+
+// ------------------------------------------------------
+// ЗАГРУЗКА
+// ------------------------------------------------------
+function loadState() {
+    const raw = localStorage.getItem("dayanaTable");
+    if (!raw) return alert("Нет сохранённых данных");
+
+    const data = JSON.parse(raw);
+
+    childName.value = data.name;
+    weekRange.value = data.week;
+    tasks = data.tasks;
+    icons = data.icons;
+
+    createTable();
+
+    data.cells.forEach(c => {
+        const cell = document.querySelector(`.cell[data-task="${c.task}"][data-day="${c.day}"]`);
+        if (!cell) return;
+
+        cell.dataset.state = c.state;
+        cell.className = "cell state-" + c.state;
+        cell.textContent = c.state === "1" ? "✓" : c.state === "2" ? "✗" : "";
+    });
+
+    updateStats();
+}
+
+
+// ------------------------------------------------------
+// СТАТИСТИКА
+// ------------------------------------------------------
+function updateStats() {
+    const cells = document.querySelectorAll(".cell");
+
+    let totalDone = 0;
+    let totalNotes = 0;
+
+    cells.forEach(c => {
+        if (c.dataset.state === "1") totalDone++;
+        if (c.dataset.state === "2") totalNotes++;
+    });
+
+    document.getElementById("totalDone").textContent = totalDone;
+    document.getElementById("totalNotes").textContent = totalNotes;
+
+    // Подсчёт дней
+    let daysPerfect = 0;
+    let daysWithNotes = 0;
+
+    for (let d = 0; d < days.length; d++) {
+        let hasNote = false;
+
+        for (let t = 0; t < tasks.length; t++) {
+            const cell = document.querySelector(`.cell[data-task="${t}"][data-day="${d}"]`);
+            if (!cell) continue;
+
+            if (cell.dataset.state === "2") {
+                hasNote = true;
+                break;
+            }
+        }
+
+        if (hasNote) daysWithNotes++;
+        else daysPerfect++;
+    }
+
+    document.getElementById("daysPerfect").textContent = daysPerfect;
+    document.getElementById("daysWithNotes").textContent = daysWithNotes;
+}
+
+
+// ------------------------------------------------------
+// КНОПКИ
+// ------------------------------------------------------
+resetBtn.onclick = resetAll;
+saveBtn.onclick = saveState;
+loadBtn.onclick = loadState;
+printBtn.onclick = () => window.print();
+
+
+// ------------------------------------------------------
+// СТАРТ
+// ------------------------------------------------------
+createTable();
+updateStats();
+
+</script>
+
+
+</body>
+</html>
