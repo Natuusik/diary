@@ -249,8 +249,10 @@
         display: none !important;
     }
     
-    /* Скрываем кнопки удаления строк при печати */
-    .remove-btn {
+   
+          /* Полностью скрываем последнюю колонку (удаление) при печати */
+    th:last-child, 
+    td:last-child {
         display: none !important;
     }
 }
