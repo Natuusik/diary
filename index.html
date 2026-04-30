@@ -482,36 +482,36 @@ function saveState() {
 }
 
 
-// ------------------------------------------------------
-// ЗАГРУЗКА
-// ------------------------------------------------------
 function loadState() {
-    const raw = localStorage.getItem("dayanaTable");
-    if (!raw) return alert("Нет сохранённых данных");
+    const saved = localStorage.getItem("dayanaTable");
+    if (!saved) return;
 
-    const data = JSON.parse(raw);
+    const data = JSON.parse(saved);
 
     childName.value = data.name;
     weekRange.value = data.week;
+
     tasks = data.tasks;
     icons = data.icons;
 
+    // 1. сначала создаём таблицу
     createTable();
 
+    // 2. потом восстанавливаем состояния клеток
     data.cells.forEach(c => {
-        const cell = document.querySelector(`.cell[data-task="${c.task}"][data-day="${c.day}"]`);
-        if (!cell) return;
-
-        cell.dataset.state = c.state;
-        cell.className = "cell state-" + c.state;
-        cell.textContent = c.state === "1" ? "✓" : c.state === "2" ? "✗" : "";
+        const cell = document.querySelector(
+            `.cell[data-task="${c.task}"][data-day="${c.day}"]`
+        );
+        if (cell) {
+            cell.dataset.state = c.state;
+            updateCellAppearance(cell);
+        }
     });
 
+    // 3. обновляем статистику
     updateStats();
 }
 
-
-// ------------------------------------------------------
 // СТАТИСТИКА
 // ------------------------------------------------------
 function updateStats() {
@@ -563,11 +563,11 @@ loadBtn.onclick = loadState;
 printBtn.onclick = () => window.print();
 
 
-// ------------------------------------------------------
 // СТАРТ
 // ------------------------------------------------------
 createTable();
 updateStats();
+window.onload = loadState;
 
 </script>
 
