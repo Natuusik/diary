@@ -305,7 +305,93 @@
     border-radius: 6px;
     cursor: pointer;
 }
+/* --- ДОПОЛНИТЕЛЬНЫЙ БЛОК ПЕЧАТИ (НЕ ЛОМАЕТ ТВОЙ ДИЗАЙН) --- */
+@media print {
 
+    @page {
+        size: A4 landscape;
+        margin: 5mm;
+    }
+
+    body {
+        background: white !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    .a4-landscape {
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 5mm !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    /* Таблица — компактная, чтобы влезла */
+    table.main-table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 11px !important;
+    }
+
+    thead th {
+        padding: 3px !important;
+        font-size: 11px !important;
+    }
+
+    tbody td {
+        padding: 3px 4px !important;
+        font-size: 11px !important;
+    }
+
+    /* Первая колонка — компактнее */
+    tbody td.task {
+        font-size: 14px !important;
+        max-width: 160px !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+    }
+
+    tbody td.task img {
+        width: 14px !important;
+        height: 14px !important;
+        margin-right: 4px !important;
+    }
+
+    /* Клетки */
+    .cell {
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 12px !important;
+    }
+
+    /* Убираем кнопки */
+    .btns,
+    button {
+        display: none !important;
+    }
+
+    /* Убираем колонку удаления */
+    th:last-child,
+    td:last-child {
+        display: none !important;
+    }
+
+    /* Статистика — компактнее */
+    .stats-wrapper {
+        margin-top: 8px !important;
+        gap: 8px !important;
+    }
+
+    .stats-box {
+        padding: 6px !important;
+        font-size: 11px !important;
+    }
+
+    .stats-box strong {
+        font-size: 12px !important;
+    }
+}
 </style>
 </head>
 
