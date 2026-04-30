@@ -130,15 +130,29 @@
         color: #333;
     }
 
-    @media print {
-        button, .btns { display: none !important; }
-        body, .a4-landscape { background: white; box-shadow: none; padding: 0; margin: 0; }
+  @media print {
+
+    /* скрываем кнопки */
+    button, 
+    .btns { 
+        display: none !important; 
     }
-    .stats-wrapper {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    margin-top: 20px;
+
+    /* убираем фон и тени */
+    body, 
+    .a4-landscape { 
+        background: white; 
+        box-shadow: none; 
+        padding: 0; 
+        margin: 0; 
+    }
+
+    /* скрываем крестики и колонку удаления */
+    .remove-btn,
+    th:last-child,
+    td:last-child {
+        display: none !important;
+    }
 }
 
 .stats-box {
