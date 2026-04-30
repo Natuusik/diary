@@ -570,19 +570,24 @@ function createTable() {
         tdRemove.classList.add("remove-btn");
         tdRemove.textContent = "✖";
         tdRemove.onclick = () => {
-            tasks.splice(t, 1);
-            icons.splice(t, 1);
-            createTable();
-            updateStats();
-        };
-        tr.appendChild(tdRemove);
+    // 1. Удаляем задание и иконку
+    tasks.splice(t, 1);
+    icons.splice(t, 1);
 
-        tasksBody.appendChild(tr);
+    // 2. Удаляем строку из DOM, НЕ пересоздавая всю таблицу
+    tr.remove();
+
+    // 3. Перенумеровываем data-task у оставшихся клеток
+    document.querySelectorAll(".cell").forEach(cell => {
+        let oldTask = Number(cell.dataset.task);
+        if (oldTask > t) {
+            cell.dataset.task = oldTask - 1;
+        }
     });
 
+    // 4. Обновляем статистику
     updateStats();
-}
-
+};
 
 // ------------------------------
 // СТАТИСТИКА
