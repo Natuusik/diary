@@ -426,7 +426,19 @@ function createTable() {
     updateStats();
 }
 
+function updateCellAppearance(cell) {
+    const s = Number(cell.dataset.state);
 
+    cell.className = "cell state-" + s;
+
+    if (s === 1) {
+        cell.textContent = "✓";
+    } else if (s === 2) {
+        cell.textContent = "✗";
+    } else {
+        cell.textContent = "";
+    }
+}
 // ------------------------------------------------------
 // ДОБАВЛЕНИЕ ЗАДАНИЯ
 // ------------------------------------------------------
