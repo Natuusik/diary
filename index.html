@@ -462,11 +462,119 @@ function addTask() {
 // ------------------------------------------------------
 // СБРОС ВСЕХ ЯЧЕЕК
 // ------------------------------------------------------
-function resetAll() {
-    document.querySelectorAll(".cell").forEach(c => {
-        c.dataset.state = "0";
-        c.className = "cell state-0";
-        c.textContent = "";
+<script>
+
+let tasks = [
+    "Заправила постель утром",
+    "Собрала портфель вечером",
+    "Вышла в школу вовремя",
+    "После школы переоделась",
+    "Вернулась домой до 19:00",
+    "Приняла душ вечером",
+    "Экранное время до 4 часов",
+    "Сдала телефон в 21:20 / пт–сб 22:30",
+    "Легла спать вовремя: пн–чт 21:50 / пт–сб 22:50",
+    "Оценки",
+    "Порядок в комнате",
+    "Суббота - уборка комнаты",
+    "Суббота - смена постели",
+    "Суббота - мытьё головы и тела мачалкой",
+];
+
+let icons = [
+    "icons/bed.png",
+    "icons/bag.png",
+    "icons/door.png",
+    "icons/clothes.png",
+    "icons/home.png",
+    "icons/shower.png",
+    "icons/screen.png",
+    "icons/phone.png",
+    "icons/sleep.png",
+    "icons/marks.png",
+    "icons/room-cleaning.png",
+    "icons/cleaning.png",
+    "icons/bed-change.png",
+    "icons/wash yourself.png"
+];
+
+const days = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+const tasksBody = document.getElementById("tasksBody");
+
+
+// ------------------------------------------------------
+// ОБНОВЛЕНИЕ ВНЕШНЕГО ВИДА ЯЧЕЙКИ
+// ------------------------------------------------------
+function updateCellAppearance(cell) {
+    const s = Number(cell.dataset.state);
+
+    cell.className = "cell state-" + s;
+
+    if (s === 1) {
+        cell.textContent = "✓";
+    } else if (s === 2) {
+        cell.textContent = "✗";
+    } else {
+        cell.textContent = "";
+    }
+}
+
+
+// ------------------------------------------------------
+// СОЗДАНИЕ ТАБЛИЦЫ
+// ------------------------------------------------------
+function createTable() {
+    tasksBody.innerHTML = "";
+
+    tasks.forEach((task, t) => {
+        const tr = document.createElement("tr");
+
+        // Задание + картинка
+        const tdTask = document.createElement("td");
+        tdTask.classList.add("task");
+        tdTask.innerHTML = `<img src="${icons[t]}"> ${task}`;
+        tr.appendChild(tdTask);
+
+        // Ячейки дней
+        days.forEach((d, i) => {
+            const td = document.createElement("td");
+            const cell = document.createElement("div");
+
+            cell.classList.add("cell");
+
+            // если state уже есть — не сбрасываем
+            cell.dataset.task = t;
+            cell.dataset.day = i;
+            cell.dataset.state = cell.dataset.state || "0";
+
+            updateCellAppearance(cell);
+
+            cell.onclick = () => {
+                let s = Number(cell.dataset.state);
+                s = (s + 1) % 3;
+
+                cell.dataset.state = s;
+                updateCellAppearance(cell);
+                updateStats();
+            };
+
+            td.appendChild(cell);
+            tr.appendChild(td);
+        });
+
+        // Удаление задания
+        const tdRemove = document.createElement("td");
+        tdRemove.classList.add("remove-btn");
+        tdRemove.textContent = "✖";
+        tdRemove.onclick = () => {
+            tasks.splice(t, 1);
+            icons.splice(t, 1);
+            createTable();
+            updateStats();
+        };
+        tr.appendChild(tdRemove);
+
+        tasksBody.appendChild(tr);
     });
 
     updateStats();
@@ -474,6 +582,33 @@ function resetAll() {
 
 
 // ------------------------------------------------------
+// ДОБАВЛЕНИЕ ЗАДАНИЯ
+// ------------------------------------------------------
+function addTask() {
+    const name = prompt("Введите новое задание:");
+    if (!name) return;
+
+    const icon = prompt("Введите имя файла картинки (например: bed.png)");
+    tasks.push(name);
+    icons.push(icon ? "icons/" + icon : "icons/default.png");
+
+    createTable();
+}
+
+
+// ------------------------------------------------------
+// СБРОС ВСЕХ ЯЧЕЕК
+// ------------------------------------------------------
+function resetAll() {
+    document.querySelectorAll(".cell").forEach(c => {
+        c.dataset.state = "0";
+        updateCellAppearance(c);
+    });
+
+    updateStats();
+}
+
+
 // ------------------------------------------------------
 // СОХРАНЕНИЕ
 // ------------------------------------------------------
@@ -501,22 +636,17 @@ function saveState() {
 function loadState() {
     const saved = localStorage.getItem("dayanaTable");
     if (!saved) {
-        // если сохранений нет — просто создаём пустую таблицу
         createTable();
-        updateStats();
         return;
     }
 
     const data = JSON.parse(saved);
 
-    // восстановить задачи и иконки
     tasks = data.tasks;
     icons = data.icons;
 
-    // создать таблицу по сохранённым задачам
     createTable();
 
-    // восстановить состояния клеток
     data.cells.forEach(c => {
         const cell = document.querySelector(
             `.cell[data-task="${c.task}"][data-day="${c.day}"]`
@@ -527,11 +657,9 @@ function loadState() {
         }
     });
 
-    // восстановить имя и неделю
     childName.value = data.name;
     weekRange.value = data.week;
 
-    // обновить статистику
     updateStats();
 }
 
@@ -549,8 +677,8 @@ printBtn.onclick = () => window.print();
 // СТАРТ
 // ------------------------------------------------------
 window.onload = loadState;
-</script>
 
+</script>
 
 </body>
 </html>
