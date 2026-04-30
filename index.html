@@ -561,10 +561,11 @@ printBtn.onclick = () => window.print();
 
 // СТАРТ
 // ------------------------------------------------------
-createTable();
-updateStats();
-window.onload = loadState;
-
+window.onload = () => {
+    loadState();     // если есть сохранение — загрузит
+    createTable();   // если сохранения нет — создаст пустую таблицу
+    updateStats();
+};
 </script>
 
 
