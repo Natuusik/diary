@@ -462,6 +462,7 @@ function resetAll() {
 
 
 // ------------------------------------------------------
+// ------------------------------------------------------
 // СОХРАНЕНИЕ
 // ------------------------------------------------------
 function saveState() {
@@ -482,18 +483,28 @@ function saveState() {
 }
 
 
+// ------------------------------------------------------
+// ЗАГРУЗКА
+// ------------------------------------------------------
 function loadState() {
-    // 1. загрузить данные
     const saved = localStorage.getItem("dayanaTable");
-    if (!saved) return;
+    if (!saved) {
+        // если сохранений нет — просто создаём пустую таблицу
+        createTable();
+        updateStats();
+        return;
+    }
+
     const data = JSON.parse(saved);
 
-    // 2. создать таблицу
+    // восстановить задачи и иконки
     tasks = data.tasks;
     icons = data.icons;
+
+    // создать таблицу по сохранённым задачам
     createTable();
 
-    // 3. восстановить состояния клеток
+    // восстановить состояния клеток
     data.cells.forEach(c => {
         const cell = document.querySelector(
             `.cell[data-task="${c.task}"][data-day="${c.day}"]`
@@ -504,49 +515,12 @@ function loadState() {
         }
     });
 
-    // 4. обновить статистику
+    // восстановить имя и неделю
+    childName.value = data.name;
+    weekRange.value = data.week;
+
+    // обновить статистику
     updateStats();
-}
-
-// СТАТИСТИКА
-// ------------------------------------------------------
-function updateStats() {
-    const cells = document.querySelectorAll(".cell");
-
-    let totalDone = 0;
-    let totalNotes = 0;
-
-    cells.forEach(c => {
-        if (c.dataset.state === "1") totalDone++;
-        if (c.dataset.state === "2") totalNotes++;
-    });
-
-    document.getElementById("totalDone").textContent = totalDone;
-    document.getElementById("totalNotes").textContent = totalNotes;
-
-    // Подсчёт дней
-    let daysPerfect = 0;
-    let daysWithNotes = 0;
-
-    for (let d = 0; d < days.length; d++) {
-        let hasNote = false;
-
-        for (let t = 0; t < tasks.length; t++) {
-            const cell = document.querySelector(`.cell[data-task="${t}"][data-day="${d}"]`);
-            if (!cell) continue;
-
-            if (cell.dataset.state === "2") {
-                hasNote = true;
-                break;
-            }
-        }
-
-        if (hasNote) daysWithNotes++;
-        else daysPerfect++;
-    }
-
-    document.getElementById("daysPerfect").textContent = daysPerfect;
-    document.getElementById("daysWithNotes").textContent = daysWithNotes;
 }
 
 
@@ -559,13 +533,10 @@ loadBtn.onclick = loadState;
 printBtn.onclick = () => window.print();
 
 
+// ------------------------------------------------------
 // СТАРТ
 // ------------------------------------------------------
-window.onload = () => {
-    loadState();     // если есть сохранение — загрузит
-    createTable();   // если сохранения нет — создаст пустую таблицу
-    updateStats();
-};
+window.onload = loadState;
 </script>
 
 
