@@ -483,21 +483,17 @@ function saveState() {
 
 
 function loadState() {
+    // 1. загрузить данные
     const saved = localStorage.getItem("dayanaTable");
     if (!saved) return;
-
     const data = JSON.parse(saved);
 
-    childName.value = data.name;
-    weekRange.value = data.week;
-
+    // 2. создать таблицу
     tasks = data.tasks;
     icons = data.icons;
-
-    // 1. сначала создаём таблицу
     createTable();
 
-    // 2. потом восстанавливаем состояния клеток
+    // 3. восстановить состояния клеток
     data.cells.forEach(c => {
         const cell = document.querySelector(
             `.cell[data-task="${c.task}"][data-day="${c.day}"]`
@@ -508,7 +504,7 @@ function loadState() {
         }
     });
 
-    // 3. обновляем статистику
+    // 4. обновить статистику
     updateStats();
 }
 
