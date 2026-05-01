@@ -681,7 +681,374 @@ printBtn.onclick = () => window.print();
 // СТАРТ
 // ------------------------------
 window.addEventListener("load", loadState);
+</script>    <script>
+let tasks = [
+    "Заправила постель утром",
+    "Собрала портфель вечером",
+    "Вышла в школу вовремя",
+    "После школы переоделась",
+    "Вернулась домой до 19:00",
+    "Приняла душ вечером",
+    "Экранное время до 4 часов",
+    "Сдала телефон в 21:20 / пт–сб 22:30",
+    "Легла спать вовремя: пн–чт 21:50 / пт–сб 22:50",
+    "Оценки",
+    "Порядок в комнате",
+    "Суббота - уборка комнаты",
+    "Суббота - смена постели",
+    "Суббота - мытьё головы и тела мачалкой"
+];
+
+let icons = [
+    "icons/bed.png",
+    "icons/bag.png",
+    "icons/door.png",
+    "icons/clothes.png",
+    "icons/home.png",
+    "icons/shower.png",
+    "icons/screen.png",
+    "icons/phone.png",
+    "icons/sleep.png",
+    "icons/marks.png",
+    "icons/room-cleaning.png",
+    "icons/cleaning.png",
+    "icons/bed-change.png",
+    "icons/wash-yourself.png"
+];
+
+const days = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+
+const tasksBody       = document.getElementById("tasksBody");
+const childName       = document.getElementById("childName");
+const weekRange       = document.getElementById("weekRange");
+const resetBtn        = document.getElementById("resetBtn");
+const saveBtn         = document.getElementById("saveBtn");
+const loadBtn         = document.getElementById("loadBtn");
+const printBtn        = document.getElementById("printBtn");
+const totalDoneEl     = document.getElementById("totalDone");
+const totalNotesEl    = document.getElementById("totalNotes");
+const daysPerfectEl   = document.getElementById("daysPerfect");
+const daysWithNotesEl = document.getElementById("daysWithNotes");
+
+// ВНЕШНИЙ ВИД КЛЕТКИ
+// ------------------------------
+function updateCellAppearance(cell) {
+    const s = Number(cell.dataset.state);
+    cell.className = "cell state-" + s;
+
+    if (s === 1) {
+        cell.textContent = "✓";
+    } else if (s === 2) {
+        cell.textContent = "✗";
+    } else {
+        cell.textContent = "";
+    }
+}
+
+// СОЗДАНИЕ ТАБЛИЦЫ
+// ------------------------------
+function createTable() {
+    tasksBody.innerHTML = "";
+
+    tasks.forEach((task, t) => {
+        const tr = document.createElement("tr");
+
+        // --- колонка задания ---
+        const tdTask = document.createElement("td");
+        tdTask.classList.add("task");
+        tdTask.innerHTML = `<img src="${icons[t]}"> ${task}`;
+        tr.appendChild(tdTask);
+
+        // --- клетки дней ---
+        days.forEach((d, i) => {
+            const td = document.createElement("td");
+            const cell = document.createElement("div");
+
+            cell.classList.add("cell");
+            cell.dataset.task = t;
+            cell.dataset.day = i;
+            cell.dataset.state = "0";
+
+            updateCellAppearance(cell);
+
+            cell.onclick = () => {
+                let s = Number(cell.dataset.state);
+                s = (s + 1) % 3;
+                cell.dataset.state = String(s);
+                updateCellAppearance(cell);
+                updateStats();
+            };
+
+            td.appendChild(cell);
+            tr.appendChild(td);
+        });
+
+        // --- кнопка удаления строки ---
+        const tdRemove = document.createElement("td");
+        tdRemove.classList.add("remove-btn");
+        tdRemove.textContent = "✖";
+
+        tdRemove.onclick = () => {
+            // 1. Удаляем задание и иконку
+            tasks.splice(t, 1);
+            icons.splice(t, 1);
+
+            // 2. Удаляем строку из DOM
+            tr.remove();
+
+            // 3. Перенумеровываем оставшиеся клетки
+            document.querySelectorAll(".cell").forEach(cell => {
+                let oldTask = Number(cell.dataset.task);
+                if (oldTask > t) {
+                    cell.dataset.task = oldTask - 1;
+                }
+            });
+
+            // 4. Обновляем статистику
+            updateStats();
+
+            // 5. Сохраняем новое состояние
+            saveState();
+        };
+
+        tr.appendChild(tdRemove);
+
+        tasksBody.appendChild(tr);
+    });
+
+    updateStats();
+}
+// СТАТИСТИКА
+// ------------------------------
+function updateStats() {
+    const cells = document.querySelectorAll(".cell");
+
+    let totalDone = 0;
+    let totalNotes = 0;
+
+    cells.forEach(c => {
+        if (c.dataset.state === "1") totalDone++;
+        if (c.dataset.state === "2") totalNotes++;
+    });
+
+    totalDoneEl.textContent = totalDone;
+    totalNotesEl.textContent = totalNotes;
+
+    let daysPerfect = 0;
+    let daysWithNotes = 0;
+
+    for (let d = 0; d < days.length; d++) {
+        let hasNote = false;
+
+        for (let t = 0; t < tasks.length; t++) {
+            const cell = document.querySelector(`.cell[data-task="${t}"][data-day="${d}"]`);
+            if (!cell) continue;
+            if (cell.dataset.state === "2") {
+                hasNote = true;
+                break;
+            }
+        }
+
+        if (hasNote) daysWithNotes++;
+        else daysPerfect++;
+    }
+
+    daysPerfectEl.textContent = daysPerfect;
+    daysWithNotesEl.textContent = daysWithNotes;
+}
+// ВЫБОР ИКОНКИ
+// ------------------------------
+function showIconPicker() {
+    return new Promise(resolve => {
+        const overlay = document.createElement("div");
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.background = "rgba(0,0,0,0.5)";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.zIndex = "9999";
+
+        const box = document.createElement("div");
+        box.style.background = "white";
+        box.style.padding = "20px";
+        box.style.borderRadius = "12px";
+        box.style.width = "420px";
+        box.style.textAlign = "center";
+        box.innerHTML = "<h3>Выберите иконку</h3>";
+
+        const grid = document.createElement("div");
+        grid.style.display = "grid";
+        grid.style.gridTemplateColumns = "repeat(4, 1fr)";
+        grid.style.gap = "12px";
+        grid.style.margin = "15px 0";
+
+       const iconList = [
+    "bed.png",
+    "bag.png",
+    "door.png",
+    "clothes.png",
+    "home.png",
+    "shower.png",
+    "screen.png",
+    "phone.png",
+    "sleep.png",
+    "marks.png",
+    "room-cleaning.png",
+    "cleaning.png",
+    "bed-change.png",
+    "wash-yourself.png"
+];
+
+iconList.forEach(file => {
+    const img = document.createElement("img");
+    img.src = "icons/" + file;
+    img.style.width = "60px";
+    img.style.height = "60px";
+    img.style.cursor = "pointer";
+    img.style.borderRadius = "8px";
+    img.style.border = "2px solid transparent";
+    img.onclick = () => {
+        document.body.removeChild(overlay);
+        resolve("icons/" + file);
+    };
+    grid.appendChild(img);
+});
+
+box.appendChild(grid);
+
+const cancelBtn = document.createElement("button");
+cancelBtn.textContent = "Отмена";
+cancelBtn.style.marginTop = "10px";
+cancelBtn.onclick = () => {
+    document.body.removeChild(overlay);
+    resolve(null);
+};
+
+box.appendChild(cancelBtn);
+overlay.appendChild(box);
+document.body.appendChild(overlay);
+});
+}
+
+
+// ДОБАВЛЕНИЕ ЗАДАНИЯ
+// ------------------------------
+async function addTask() {
+    const name = prompt("Введите новое задание:");
+    if (!name) return;
+
+    // 1. Сохраняем текущее состояние клеток
+    const oldCells = Array.from(document.querySelectorAll(".cell")).map(c => ({
+        task: Number(c.dataset.task),
+        day: Number(c.dataset.day),
+        state: c.dataset.state
+    }));
+
+    // 2. Выбор иконки
+    const icon = await showIconPicker();
+    const iconPath = icon ? icon : "icons/default.png";
+
+    // 3. Добавляем задание
+    const newIndex = tasks.length;
+    tasks.push(name);
+    icons.push(iconPath);
+
+    // 4. Пересоздаём таблицу
+    createTable();
+
+    // 5. Восстанавливаем состояния старых клеток
+    oldCells.forEach(c => {
+        if (c.task >= newIndex) return; // новые строки не трогаем
+
+        const cell = document.querySelector(
+            `.cell[data-task="${c.task}"][data-day="${c.day}"]`
+        );
+        if (cell) {
+            cell.dataset.state = c.state;
+            updateCellAppearance(cell);
+        }
+    });
+
+    updateStats();
+    saveState();
+}
+
+// СБРОС ВСЕХ ЯЧЕЕК
+// ------------------------------
+function resetAll() {
+    document.querySelectorAll(".cell").forEach(c => {
+        c.dataset.state = "0";
+        updateCellAppearance(c);
+    });
+    updateStats();
+}
+
+// СОХРАНЕНИЕ
+// ------------------------------
+function saveState() {
+    const data = {
+        name: childName.value,
+        week: weekRange.value,
+        tasks,
+        icons,
+        cells: Array.from(document.querySelectorAll(".cell")).map(c => ({
+            task: c.dataset.task,
+            day: c.dataset.day,
+            state: c.dataset.state
+        }))
+    };
+
+    localStorage.setItem("dayanaTable", JSON.stringify(data));
+    alert("Сохранено");
+}
+
+// ЗАГРУЗКА
+// ------------------------------
+function loadState() {
+    const saved = localStorage.getItem("dayanaTable");
+    if (!saved) {
+        createTable();
+        return;
+    }
+
+    const data = JSON.parse(saved);
+
+    if (Array.isArray(data.tasks)) tasks = data.tasks;
+    if (Array.isArray(data.icons)) icons = data.icons;
+
+    createTable();
+
+    if (Array.isArray(data.cells)) {
+        data.cells.forEach(c => {
+            const cell = document.querySelector(
+                `.cell[data-task="${c.task}"][data-day="${c.day}"]`
+            );
+            if (cell) {
+                cell.dataset.state = c.state;
+                updateCellAppearance(cell);
+            }
+        });
+    }
+
+    if (typeof data.name === "string") childName.value = data.name;
+    if (typeof data.week === "string") weekRange.value = data.week;
+
+    updateStats();
+}
+
+// КНОПКИ
+// ------------------------------
+resetBtn.onclick = resetAll;
+saveBtn.onclick = saveState;
+loadBtn.onclick = loadState;
+printBtn.onclick = () => window.print();
+
+// СТАРТ
+// ------------------------------
+window.addEventListener("load", loadState);
 </script>
+
 
     
 </body>
